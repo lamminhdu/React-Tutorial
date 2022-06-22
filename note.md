@@ -137,4 +137,36 @@ function ExpenseItem(props) {
     )
 }
 ```
+**46. Module Introduction**
+- Handling Events
+- Update the UI and Working with "State"
+- A closer look at components and State
 
+**47. Listening to events and Working with event handler**
+- `<button onClick={() => {console.log('Clicked!')} }> change title button </button>`
+- `<button onClick={clickHandler}> change title button </button>`: we did not add `()` in JSX -> this function will be execute when parsing
+- `{clickHandler}` point function to onClick event, executes the function for us whenever the click occurs
+- If an element supports an event, then you can add a listener with react 
+
+**48. How Component functions are executed**
+
+- `title = 'Updated!'` -> onClick -> React not change the title
+- React never repeat the initialize
+- React goes through all of components when the application is initially rendered
+- We need a way of telling react that something changed and that a certain component should be re-evaluated
+
+=> special concept called state
+
+**49. Working with 'State'**
+
+- `clickHandler` should change title of component (re-evaluated and re-drawn on the screen)
+- `import Reaact, { useState } from 'react';`
+- React hook can be recognized by the fact that they start with the word "use"
+- React hook cant be called outside of component function
+- `useState()` always return an array [1, 2]:
+    + 1: the current state value
+    + 2: a function for updating that
+- `const [title, setTitle] = useState(props.title);`
+- `setTitle('Update!');`: not just assign a new value to some variable, re-evaluate component
+- `console.log(title)` log the old `props.title`, `setTitle('Update!')` does not change the value right away, but instead schedules this state update
+- if you have data, which might change, and where changes to that data should be reflected on the user interface then you need state
