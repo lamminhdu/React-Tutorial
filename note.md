@@ -170,3 +170,59 @@ function ExpenseItem(props) {
 - `setTitle('Update!');`: not just assign a new value to some variable, re-evaluate component
 - `console.log(title)` log the old `props.title`, `setTitle('Update!')` does not change the value right away, but instead schedules this state update
 - if you have data, which might change, and where changes to that data should be reflected on the user interface then you need state
+
+
+<div style='color:yellow'>June 22th 2022</div>
+
+**50. A closer look at the "useState" Hook**
+- Separate State for each component
+- the console has 4 title in fisrt load, when clicking `Change Title` button, it only change the title that being clicked -> not effect others components
+- 
+```js
+const ExpenseItem = props => {
+    const [title, setTitle] = useState(props.title)
+
+    console.log(title)
+    
+    const clickHandler = () => {
+        console.log(title);
+        setTitle("updated!")
+    }
+
+
+    return (
+        <Card className='expense-item'>
+            <ExpenseDate date={props.date}></ExpenseDate>
+            <div className='expense-item__description'>
+                <h2>{title}</h2>
+                <div className='expense-item__price'>{props.amount}</div>
+            </div>
+            <button onClick={clickHandler}>Change Title</button>
+        </Card>
+    )
+}
+```
+---
+**NOTE**
+why use `const [title, setTittle] = useState(props.title)` then assign new value in `setTitle("updated!")`
+---
+
+- Calling `useState` will tell React that it should manage some value for us, we never see that variable itself.
+- we call a function and never assign new value to title with `props.title = "Updated!"` 
+
+---
+**NOTE**
+How do we get the latest title value? 
+---
+- Calling `SetTitle` tell React reload the component -> then `const [title, setTitle] = useState(props.title);` also execute again -> update new title
+---
+
+**51. Sate can be updated in many ways!**
+
+- upon user events (e.g. upon a click).
+- You can update states for whatever reason you may have.
+- when http requests complete
+- for amount of time (timeout)
+
+**52. Adding form inputs**
+
