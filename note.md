@@ -533,5 +533,301 @@ How do we get the latest title value?
 - when http requests complete
 - for amount of time (timeout)
 
+
+<div style='color:yellow'>June 24th 2022</div>
+
 **52. Adding form inputs**
 
+- Gather user input 
+- `/NewExpense`, `NewExpense.jss`, `NewExpense.css`
+- `ExpenseForm.js`, `ExpenseForm.css`
+
+```js
+import './ExpenseForm.css';
+
+const ExpenseForm = () => {
+    return (
+        <form>
+            <div className='new-expense__controls'>
+                <div className='new-expense__control'>
+                    <label>Tiltle</label>
+                    <input type='text' />
+                </div>
+                <div className='new-expense__control'>
+                    <label>Amount</label>
+                    <input type='number' min="0.01" step="0.01" />
+                </div>
+                <div className='new-expense__control'>
+                    <label>Date</label>
+                    <input type='date' min="2019-01-01" max="2022-12-31"></input>
+                </div>
+            </div>
+            <div className='new-expense__actions'>
+                <button type='submit'>Add Expense</button>
+            </div>
+        </form>
+    )
+}
+
+export default ExpenseForm
+```
+
+```js
+import './NewExpense.css';
+import ExpenseForm from './ExpenseForm';
+
+const NewExpense = () => {
+
+    return (
+        <div className='new-expense'>
+            <ExpenseForm></ExpenseForm>
+        </div>
+    )
+}
+
+export default NewExpense
+```
+
+**53. Listening to User inputs**
+
+- `onChange` event
+- `(event)` in function
+- `event.target.value` to get value from input
+- `target` simple points at the DOM element for which the event occured
+
+```js
+const changeTitleHandler = (event) => {
+    console.log(event.target.value)
+} 
+```
+
+**54. Working with Multiple States**
+
+- To make sure that we store the value and that it survives if that function would be re-executed and the component would be re-evaluated
+- How can you manage more than one State? (useState):
+    + `const [enteredTitle, setEnteredTitle] = useState('');`
+    + `const [enteredAmount, setEnteredAmount] = useState('');`
+    + `const [enteredDate, setEnteredDate] = useState('');`
+
+- Even if `enteredAmount` is define at type number, it will be a number as a string when we get the value (same for date), -> that why we initialize with a string
+- You often will have multipke States oer component
+
+```js
+    const [enteredTitle, setEnteredTitle] = useState('');
+    const [enteredAmount, setEnteredAmount] = useState('');
+    const [enteredDate, setEnteredDate] = useState('');
+
+    const titleChangeHandler = (event) => {
+        setEnteredTitle(event.target.value);
+    };
+    
+
+    const amountChangeHandler = (event) => {
+        setEnteredAmount(event.target.value);
+    };
+
+
+    const dateChangeHandler = (event) => {
+        setEnteredDate(event.target.value);
+    };
+```
+
+**55. Using One State Instead (And What's Better)**
+
+- 3 states are related to our form ->  pass to `useState` object (dict)
+- the different is: you need to update all three properties and not just one
+- ! React will replace the `enteredAmount` `enteredDate` if you not pass this key into the object when updating the state related to `enteredTitle, enteredAmount, enteredDate`
+- It's your responsibility to make sure that the other data not get lost
+- Rest opeator, `...userInput` -> then override the `title`
+```js
+    const [userInput, setUserInput] = useState({
+        enteredTitle: "",
+        enteredAmount: "",
+        enteredDate: ""
+    });
+
+    const titleChangeHandler = (event) => {
+        setUserInput({
+            ...userInput,
+            enteredTitle: event.target.value,
+        })
+    };
+    
+
+    const amountChangeHandler = (event) => {
+        setUserInput({
+            ...userInput,
+            enteredAmount: event.target.value,
+        })
+    };
+
+
+    const dateChangeHandler = (event) => {
+        setUserInput({
+            ...userInput,
+            enteredDate: event.target.value,
+        })
+    };
+
+```
+**56. Updating State That Depends On The Previous State**
+
+- `function form`
+- whenever you update state and you depend on the previous state, you should use an alternative form of this state updating function
+- React schedules state updates, it doesn't perform them instantly, if you schedule a lot of state updates at the same time, you could be depending on an outdated or incorrect state snapshot
+```js
+    const titleChangeHandler = (event) => {
+        setUserInput((preState) => {
+            return {...preState, enteredTitle: event.target.value}
+        })
+    };
+```
+=> this will ensure that you always operate on the latest state snapshot
+
+**57. Handling Form Submission**
+
+- button onClick="" event is not the best way of listening here, because there is a default behavior built into the browser and built into forums on web pages.
+- ? if a button with type submit is pressed in overall forum element, will emit the event
+- `<form onSubmit={}>`
+- whenever a form is submitted, browser (client) send request to server (in this case is development server) -> we dont want to -> we want JS manually collect and combine data
+- `event.preventDefault()`: prevent the default of this request being sent -> the request is not sent -> the page will now also not reload, stay on that page -> continue handling with JS
+
+```js
+    const submitHandler = (event) => {
+        event.preventDefault();
+        
+        const expenseData = {
+            title: enteredTitle,
+            amount: enteredAmount,
+            date: new Date(enteredDate),
+        };
+
+        console.log(expenseData);
+    };
+```
+
+**58. Adding Two-Way Binding**
+
+- simple mean: listen to changes, pass new value back into the input
+- reset or change the input programmatically
+- It allows you to gather user input, but then also change it (upon form submission)
+- value attribute to input element `value={enteredTittle}` so that when we change the state, we also change input (sound like infinite loop) -> call setEnteredTitle to set back empty value
+
+```js
+const submitHandler = (event) => {
+        event.preventDefault();
+        
+        const expenseData = {
+            title: enteredTitle,
+            amount: enteredAmount,
+            date: new Date(enteredDate),
+        };
+
+        console.log(expenseData);
+        setEnteredTitle("");
+        setEnteredAmount("");
+        setEnteredDate("");
+    };
+
+    return (
+        <form onSubmit={submitHandler}>
+            <div className='new-expense__controls'>
+                <div className='new-expense__control'>
+                    <label>Title</label>
+                    <input 
+                        type='text' 
+                        onChange={titleChangeHandler}
+                        value={enteredTitle}
+                    />
+                </div>
+                <div className='new-expense__control'>
+                    <label>Amount</label>
+                    <input 
+                        type='number' 
+                        min="0.01" 
+                        step="0.01" 
+                        onChange={amountChangeHandler}
+                        value={enteredAmount}
+                    />
+                </div>
+                <div className='new-expense__control'>
+                    <label>Date</label>
+                    <input 
+                        type='date' 
+                        min="2019-01-01" 
+                        max="2022-12-31" 
+                        onChange={dateChangeHandler}
+                        value={enteredDate}
+                    />
+                </div>
+            </div>
+            <div className='new-expense__actions'>
+                <button type='submit'>Add Expense</button>
+            </div>
+        </form>
+    )
+```
+
+**59. Child-to-Parent Component Communication (Bottom-up)**
+
+- `props`: can only be passed from parent to child, we cant skip intermediate components
+- how can we pass data from children to parent? -> use `props` and pass the function
+- parent: `onSaveExpenseData={saveExpenseDataHandler}`, child: `props.onSaveExpenseData(expenseData);`
+- parent: `<NewExpense onaddExpenseHandler={addExpenseHandler}></NewExpense>`, child: `props.onaddExpenseHandler(expenseData);`
+
+**60. Lifting The Sate Up**
+
+- It's not always that root app component to which you wanna lift your state up. The goal is to lift it up just as high as necessary in your Component Tree until you have a component which has both access to the components that generate data as well as the components that needs data
+
+- [Lifting The Sate Up](./note_images/60_Lifting-state-up.png "Title")
+
+**Assigment 2: Time to Practice: Working with Events & State**
+
+
+**61. Controlled vs Uncontrolled Components & Stateless vs Stateful Components**
+
+**Quiz 2: Learning Check: Working with Events & State**
+
+1. How should you NOT listen to events when working with React?
+
+-> That's the correct choice because this is how you should NOT set up event listening. This would be imperative code, you're not using React's features with this code and you would trigger some function that lives outside of React components and hence wouldn't be able to interact with React component state.
+
+2. Which value should you pass to event listener props like onClick?
+
+-> That's the correct choice - you want to pass a "pointer" at the to-be-executed function as a value to onClick etc. Then, this function gets executed "on your behalf" by React when the event occurs.
+
+3. How can you communicate from one of your components to a parent (i.e. higher level) component?
+
+-> That's the correct choice. In JavaScript, functions are just objects (i.e. regular values) and hence you can pass them as values via props to a component. If that component then calls that function, it executes - and that's how you can trigger a function defined in a parent component from inside a child component.
+
+4. How can you change what a component displays on the screen?
+
+-> Create some "State" value (via useState) which you can then change and output in JSX
+
+5. Why do you need this extra "state" concept instead of regular JS variables which you change and use?
+
+-> That's correct! React doesn't care whether you changed some variable values. It'll not re-evaluate the component function. It only does that for changes to registered state values (created via useState)
+
+6. Which statement about useState is NOT correct?
+
+-> That's the correct choice because this statement is wrong. Calling useState again will simply create a new state.
+
+7. How can you update component state (created via useState)?
+
+-> That's correct! useState returns an array with exactly two elements - the second element is always a function which you can call to set a new value for your state. Calling that function will then also trigger React to re-evaluate the component.
+
+8. How much state may you manage in one single component?
+
+-> There's no restriction at all.
+
+9. What's wrong about this code snippet?
+
+```js
+const [counter, setCounter] = useState(1);
+...
+setCounter(counter + 1);
+```
+
+-> If you update state that depends on the previous state, you should use the "function form" of the state updating function instead.
+
+**62. Module Resources**
